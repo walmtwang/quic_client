@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"crypto/tls"
 	"flag"
 	"fmt"
@@ -86,13 +85,13 @@ func main() {
 		ServerName: domain,
 		NextProtos: []string{"rtmp over quic"},
 	}, &quic.Config{
-		Versions: []quic.VersionNumber{quic.VersionDraft29},
+		Versions: []quic.VersionNumber{quic.VersionGQUIC43},
 	})
 	if err != nil {
 		log.Fatalf("quic.DialAddr err:%v", err)
 		return
 	}
-	quicStream, err := quicSession.OpenStreamSync(context.Background())
+	quicStream, err := quicSession.OpenStreamSync()
 
 	quicConn := NewQuicConn(quicSession, quicStream)
 

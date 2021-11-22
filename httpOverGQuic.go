@@ -34,7 +34,11 @@ func main() {
 
 	domain := strings.Split(url2.Host, ":")[0]
 	roundTripper := &h2quic.RoundTripper{
-		QuicConfig: &quic.Config{Versions: []quic.VersionNumber{quic.VersionGQUIC39}},
+		QuicConfig: &quic.Config{
+			Versions: []quic.VersionNumber{
+				quic.VersionGQUIC43,
+			},
+		},
 		TLSClientConfig: &tls.Config{
 			ServerName: domain,
 			NextProtos: []string{"rtmp over quic"},
