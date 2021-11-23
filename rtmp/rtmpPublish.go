@@ -12,12 +12,6 @@ import (
 	rtmp "github.com/zhangpeihao/gortmp"
 )
 
-const (
-	programName  = "RtmpPublisher"
-	version      = "0.0.1"
-	MaxSleepTime = 1000
-)
-
 type RtmpPublisher struct {
 	Conn   net.Conn
 	Stream rtmp.OutboundStream
@@ -33,13 +27,6 @@ type RtmpPublisher struct {
 	CanPublisher     bool
 	BeginTimeMs      int64
 	PublisherBeginMs int64
-}
-
-type PrintLog struct {
-}
-
-func (p *PrintLog) Printf(format string, a ...interface{}) {
-	fmt.Printf(format+"\n", a...)
 }
 
 func NewRtmpPublisher(conn net.Conn, flvFileName string, tcUrl string, streamName string,

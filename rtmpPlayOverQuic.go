@@ -51,11 +51,11 @@ func main() {
 
 	qConn := quicConn.NewQuicConn(quicSession, quicStream)
 
-	rtmpPublisher := rtmp.NewRtmpPublisher(qConn, fileName,
+	rtmpPlay := rtmp.NewRtmpPlay(qConn, fileName,
 		tcUrl,
 		streamName)
-	if err := rtmpPublisher.Start(); err != nil {
-		log.Fatalf("rtmpPublisher.Start err:%v", err)
+	if err := rtmpPlay.Start(); err != nil {
+		log.Fatalf("rtmpPlay.Start err:%v", err)
 		return
 	}
 }
