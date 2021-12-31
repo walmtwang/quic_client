@@ -20,15 +20,21 @@ func main() {
 	var streamName string
 	var fileName string
 	var port int
+	var ignoreSSL int
 	flag.StringVar(&ip, "ip", "", "ip")
 	flag.StringVar(&tcUrl, "tcUrl", "", "tcUrl")
 	flag.StringVar(&streamName, "streamName", "", "streamName")
 	flag.StringVar(&fileName, "fileName", "", "fileName")
 	flag.IntVar(&port, "port", 443, "port, default 443")
+	flag.IntVar(&ignoreSSL, "ignoreSSL", 0, "0: open SSL check, 1: ignore SSL check. default 0")
 	flag.Parse()
 	if ip == "" || tcUrl == "" || streamName == "" || fileName == "" {
 		log.Fatalln("ip == \"\" ||tcUrl == \"\" ||streamName == \"\" ||fileName == \"\"")
 
+	}
+	insecureSkipVerify := false
+	if ignoreSSL == 1 {
+		insecureSkipVerify = true
 	}
 
 	url2, err := url.Parse(tcUrl)
@@ -38,8 +44,9 @@ func main() {
 	domain := strings.Split(url2.Host, ":")[0]
 
 	quicSession, err := quic.DialAddr(fmt.Sprintf("%s:%d", ip, port), &tls.Config{
-		ServerName: domain,
-		NextProtos: []string{"rtmp over quic"},
+		ServerName:         domain,
+		NextProtos:         []string{"rtmp over quic"},
+		InsecureSkipVerify: insecureSkipVerify,
 	}, &quic.Config{
 		Versions: []quic.VersionNumber{quic.VersionDraft29},
 	})
