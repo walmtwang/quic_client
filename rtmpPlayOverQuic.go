@@ -37,16 +37,23 @@ func main() {
 	}
 	domain := strings.Split(url2.Host, ":")[0]
 
-	quicSession, err := quic.DialAddr(fmt.Sprintf("%s:%d", ip, port), &tls.Config{
+	tlsConfig := tls.Config{
 		ServerName: domain,
 		NextProtos: []string{"rtmp over quic"},
-	}, &quic.Config{
+	}
+	quicSession, err := quic.DialAddr(fmt.Sprintf("%s:%d", ip, port), &tlsConfig, &quic.Config{
 		Versions: []quic.VersionNumber{quic.VersionDraft29},
 	})
 	if err != nil {
 		log.Fatalf("quic.DialAddr err:%v", err)
 		return
 	}
+	tlsInfo := quicSession.ConnectionState().TLS
+	for i := 0; i < len(tlsInfo.PeerCertificates); i++ {
+		cert := tlsInfo.PeerCertificates[i]
+		log.Printf("index:%v, Issuer:%v, Subject:%v, NotBefore:%v, NotAfter:%v", i, cert.Issuer, cert.Subject, cert.NotBefore, cert.NotAfter)
+	}
+
 	quicStream, err := quicSession.OpenStreamSync(context.Background())
 
 	qConn := quicConn.NewQuicConn(quicSession, quicStream)

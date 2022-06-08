@@ -54,6 +54,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("hclient.Get err:%v", err)
 	}
+	tlsInfo := resp.TLS
+	for i := 0; i < len(tlsInfo.PeerCertificates); i++ {
+		cert := tlsInfo.PeerCertificates[i]
+		log.Printf("index:%v, Issuer:%v, Subject:%v, NotBefore:%v, NotAfter:%v", i, cert.Issuer, cert.Subject, cert.NotBefore, cert.NotAfter)
+	}
+
 	fmt.Printf("http status:%v\n", resp.StatusCode)
 	if print > 0 {
 		fmt.Printf("resp:")
