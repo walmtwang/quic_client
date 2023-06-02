@@ -7,11 +7,11 @@ import (
 )
 
 type QuicConn struct {
-	QuicSession quic.Session
+	QuicSession quic.Connection
 	QuicStream  quic.Stream
 }
 
-func NewQuicConn(quicSession quic.Session, quicStream quic.Stream) *QuicConn {
+func NewQuicConn(quicSession quic.Connection, quicStream quic.Stream) *QuicConn {
 	return &QuicConn{
 		QuicSession: quicSession,
 		QuicStream:  quicStream,

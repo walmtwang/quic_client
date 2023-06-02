@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -18,11 +19,15 @@ func main() {
 	var ip string
 	var port int
 	var httpUrl string
-	var print int
+	var requestTime int
+	var sleepTime int
+	var waitTime int
 	flag.StringVar(&ip, "ip", "", "server ip")
 	flag.StringVar(&httpUrl, "url", "", "http url, https://domain/live/stream.flv")
 	flag.IntVar(&port, "port", 443, "server port, default 443")
-	flag.IntVar(&print, "print", 1, "print response, default 1")
+	flag.IntVar(&requestTime, "requestTime", 10, "request time(s), default 10s")
+	flag.IntVar(&sleepTime, "sleepTime", 60, "sleep time(s), default 60s")
+	flag.IntVar(&waitTime, "waitTime", 60, "wait time(s), default 60s")
 	flag.Parse()
 	if ip == "" || httpUrl == "" {
 		log.Fatalln("ip == \"\" ||  url == \"\"")
@@ -51,29 +56,31 @@ func main() {
 	hclient := &http.Client{
 		Transport: roundTripper,
 	}
+	go func() {
+
+		resp, err := hclient.Get(httpUrl)
+		if err != nil {
+			log.Fatalf("hclient.Get err:%v", err)
+		}
+		tlsInfo := resp.TLS
+		for i := 0; i < len(tlsInfo.PeerCertificates); i++ {
+			cert := tlsInfo.PeerCertificates[i]
+			log.Printf("index:%v, Issuer:%v, Subject:%v, NotBefore:%v, NotAfter:%v", i, cert.Issuer, cert.Subject, cert.NotBefore, cert.NotAfter)
+		}
+
+		fmt.Printf("http status:%v\n", resp.StatusCode)
+		time.Sleep(time.Duration(requestTime) * time.Second)
+		resp.Body.Close()
+	}()
+
+	time.Sleep(time.Duration(sleepTime) * time.Second)
+
 	resp, err := hclient.Get(httpUrl)
 	if err != nil {
 		log.Fatalf("hclient.Get err:%v", err)
 	}
-	tlsInfo := resp.TLS
-	for i := 0; i < len(tlsInfo.PeerCertificates); i++ {
-		cert := tlsInfo.PeerCertificates[i]
-		log.Printf("index:%v, Issuer:%v, Subject:%v, NotBefore:%v, NotAfter:%v", i, cert.Issuer, cert.Subject, cert.NotBefore, cert.NotAfter)
-	}
 
 	fmt.Printf("http status:%v\n", resp.StatusCode)
-	if print > 0 {
-		fmt.Printf("resp:")
-		defer resp.Body.Close()
-		for {
-			buf := make([]byte, 1024)
-			len, err := resp.Body.Read(buf)
-			if err != nil {
-				fmt.Printf("%s", string(buf[:len]))
-				log.Fatalf("\nresp.Body.Read err:%v\n", err)
-			}
-			fmt.Printf("%s", string(buf[:len]))
-		}
-	}
-
+	resp.Body.Close()
+	time.Sleep(time.Duration(waitTime) * time.Second)
 }

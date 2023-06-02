@@ -48,6 +48,9 @@ func main() {
 		log.Fatalf("quic.DialAddr err:%v", err)
 		return
 	}
+	log.Printf("tlsConfig:%v", tlsConfig)
+	log.Printf("quicSession:%v", quicSession)
+	log.Printf("quicSession.ConnectionState().TLS:%v", quicSession.ConnectionState().TLS)
 	tlsInfo := quicSession.ConnectionState().TLS
 	for i := 0; i < len(tlsInfo.PeerCertificates); i++ {
 		cert := tlsInfo.PeerCertificates[i]

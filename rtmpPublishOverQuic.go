@@ -43,20 +43,30 @@ func main() {
 	}
 	domain := strings.Split(url2.Host, ":")[0]
 
-	quicSession, err := quic.DialAddr(fmt.Sprintf("%s:%d", ip, port), &tls.Config{
+	quiConn, err := quic.DialAddr(fmt.Sprintf("%s:%d", ip, port), &tls.Config{
 		ServerName:         domain,
 		NextProtos:         []string{"rtmp over quic"},
 		InsecureSkipVerify: insecureSkipVerify,
 	}, &quic.Config{
-		Versions: []quic.VersionNumber{quic.VersionDraft29},
+		//Versions: []quic.VersionNumber{quic.VersionDraft29},
 	})
 	if err != nil {
 		log.Fatalf("quic.DialAddr err:%v", err)
 		return
 	}
-	quicStream, err := quicSession.OpenStreamSync(context.Background())
+	tlsInfo := quiConn.ConnectionState().TLS
+	for i := 0; i < len(tlsInfo.PeerCertificates); i++ {
+		cert := tlsInfo.PeerCertificates[i]
+		log.Printf("index:%v, Issuer:%v, Subject:%v, NotBefore:%v, NotAfter:%v", i, cert.Issuer, cert.Subject, cert.NotBefore, cert.NotAfter)
+	}
 
-	qConn := quicConn.NewQuicConn(quicSession, quicStream)
+	quicStream, err := quiConn.OpenStreamSync(context.Background())
+	if err != nil {
+		log.Fatalf("quiConn.OpenStreamSync err:%v", err)
+		return
+	}
+
+	qConn := quicConn.NewQuicConn(quiConn, quicStream)
 
 	rtmpPublisher := rtmp.NewRtmpPublisher(qConn, fileName,
 		tcUrl,

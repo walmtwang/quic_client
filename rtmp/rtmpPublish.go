@@ -167,14 +167,14 @@ func (r *RtmpPublisher) PublishData() error {
 
 		// 判断是否需要sleep，实现flv的平滑发送
 		processedTime = uint32((time.Now().UnixNano() - startAt) / 1e6)
-		if needWaitTime > processedTime+100 {
+		if needWaitTime > processedTime {
 			// 限制最大sleep时间，防止进程假死
 			//r.Log.Printf("WaitTime:%d, processedTime:%d, needWaitTime:%d",
 			//	needWaitTime, processedTime, needWaitTime-processedTime)
 			sleepTime := math.Min(float64(needWaitTime-processedTime), MaxSleepTime)
 			time.Sleep(time.Millisecond * time.Duration(sleepTime))
 			// sleep后重新开始循环
-			continue
+			//continue
 		}
 
 		// 如果文件已经读完，则重新开始推流

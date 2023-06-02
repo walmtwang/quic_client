@@ -1,11 +1,10 @@
 package main
 
 import (
-	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
-	"net/url"
+	"net"
 	"quic_demo/rtmp"
 	"strings"
 )
@@ -21,7 +20,7 @@ func main() {
 	flag.StringVar(&tcUrl, "tcUrl", "", "tcUrl")
 	flag.StringVar(&streamName, "streamName", "", "streamName")
 	flag.StringVar(&fileName, "fileName", "", "fileName")
-	flag.IntVar(&port, "port", 443, "port, default 443")
+	flag.IntVar(&port, "port", 1935, "port, default 1935")
 	flag.Parse()
 	if ip == "" || tcUrl == "" || streamName == "" || fileName == "" {
 		log.Fatalln("ip == \"\" ||tcUrl == \"\" ||streamName == \"\" ||fileName == \"\"")
@@ -29,23 +28,10 @@ func main() {
 	}
 
 	tcUrl = strings.Replace(tcUrl, "rtmps://", "rtmp://", -1)
-	url2, err := url.Parse(tcUrl)
-	if err != nil {
-		log.Fatalf("url.Parse failed, err:%v", err)
-	}
-	domain := strings.Split(url2.Host, ":")[0]
 
-	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", ip, port), &tls.Config{
-		ServerName: domain,
-	})
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
 		log.Fatalf("tls.Dial failed, err:%v", err)
-	}
-
-	tlsInfo := conn.ConnectionState()
-	for i := 0; i < len(tlsInfo.PeerCertificates); i++ {
-		cert := tlsInfo.PeerCertificates[i]
-		log.Printf("index:%v, Issuer:%v, Subject:%v, NotBefore:%v, NotAfter:%v", i, cert.Issuer, cert.Subject, cert.NotBefore, cert.NotAfter)
 	}
 
 	rtmpPublisher := rtmp.NewRtmpPublisher(conn, fileName,
