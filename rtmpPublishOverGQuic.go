@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"github.com/lucas-clemente/quic-go"
+	"github.com/walmtwang/quic-go"
 	"log"
 	"net"
 	"net/url"
